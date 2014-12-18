@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 from django.conf import settings
 
 from math import ceil
@@ -10,14 +11,18 @@ PAGINATION_SETTINGS = getattr(settings, "PAGINATION_SETTINGS", {})
 PAGE_RANGE_DISPLAYED = PAGINATION_SETTINGS.get("PAGE_RANGE_DISPLAYED", 10)
 MARGIN_PAGES_DISPLAYED = PAGINATION_SETTINGS.get("MARGIN_PAGES_DISPLAYED", 2)
 
+
 class InvalidPage(Exception):
     pass
+
 
 class PageNotAnInteger(InvalidPage):
     pass
 
+
 class EmptyPage(InvalidPage):
     pass
+
 
 class Paginator(object):
     def __init__(self, object_list, per_page, orphans=0, allow_empty_first_page=True, request=None):
@@ -29,7 +34,7 @@ class Paginator(object):
         self.request = request
 
     def validate_number(self, number):
-        "Validates the given 1-based page number."
+        """Validates the given 1-based page number."""
         try:
             number = int(number)
         except ValueError:
@@ -44,7 +49,7 @@ class Paginator(object):
         return number
 
     def page(self, number):
-        "Returns a Page object for the given 1-based page number."
+        """Returns a Page object for the given 1-based page number."""
         number = self.validate_number(number)
         bottom = (number - 1) * self.per_page
         top = bottom + self.per_page
@@ -53,7 +58,7 @@ class Paginator(object):
         return Page(self.object_list[bottom:top], number, self)
 
     def _get_count(self):
-        "Returns the total number of objects, across all pages."
+        """Returns the total number of objects, across all pages."""
         if self._count is None:
             try:
                 self._count = self.object_list.count()
@@ -66,7 +71,7 @@ class Paginator(object):
     count = property(_get_count)
 
     def _get_num_pages(self):
-        "Returns the total number of pages."
+        """Returns the total number of pages."""
         if self._num_pages is None:
             if self.count == 0 and not self.allow_empty_first_page:
                 self._num_pages = 0
@@ -84,7 +89,8 @@ class Paginator(object):
         return range(1, self.num_pages + 1)
     page_range = property(_get_page_range)
 
-QuerySetPaginator = Paginator # For backwards-compatibility.
+QuerySetPaginator = Paginator  # For backwards-compatibility.
+
 
 class PageRepresentation(int):
     def __new__(cls, x, querystring):
@@ -110,8 +116,8 @@ def add_page_querystring(func):
                     new_result.append(number)
             return new_result
         return result
-
     return wrapper
+
 
 class Page(object):
     def __init__(self, object_list, number, paginator):
@@ -170,26 +176,14 @@ class Page(object):
         if self.paginator.num_pages <= PAGE_RANGE_DISPLAYED:
             return range(1, self.paginator.num_pages+1)
         result = []
-        left_side = PAGE_RANGE_DISPLAYED/2
-        right_side = PAGE_RANGE_DISPLAYED - left_side
-        if self.number > self.paginator.num_pages - PAGE_RANGE_DISPLAYED/2:
-            right_side = self.paginator.num_pages - self.number
-            left_side = PAGE_RANGE_DISPLAYED - right_side
-        elif self.number < PAGE_RANGE_DISPLAYED/2:
-            left_side = self.number
-            right_side = PAGE_RANGE_DISPLAYED - left_side
-        for page in xrange(1, self.paginator.num_pages+1):
-            if page <= MARGIN_PAGES_DISPLAYED:
-                result.append(page)
-                continue
-            if page > self.paginator.num_pages - MARGIN_PAGES_DISPLAYED:
-                result.append(page)
-                continue
-            if (page >= self.number - left_side) and (page <= self.number + right_side):
-                result.append(page)
-                continue
-            if result[-1]:
-                result.append(None)
+        upper_bound = int(ceil(self.number / float(PAGE_RANGE_DISPLAYED))) * 10
+        lower_bound = upper_bound - 10 + 1
+
+        if upper_bound > self.paginator.num_pages:
+            upper_bound = self.paginator.num_pages
+
+        for page in xrange(lower_bound, upper_bound+1):
+            result.append(page)
 
         return result
 
@@ -199,7 +193,7 @@ class Page(object):
         GET parameters present.
         """
         if self.paginator.request:
-            return self.base_queryset %page_number
+            return self.base_queryset % page_number
 
         #raise Warning("You must supply Paginator() with the request object for a proper querystring.")
         return 'page=%s' %page_number
