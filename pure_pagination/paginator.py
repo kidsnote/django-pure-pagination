@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 from django.conf import settings
 
-from math import ceil
+from math import ceil, floor
 import functools
 
 from django.template.loader import render_to_string
