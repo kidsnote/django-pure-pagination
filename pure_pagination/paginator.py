@@ -176,9 +176,11 @@ class Page(object):
         if self.paginator.num_pages <= PAGE_RANGE_DISPLAYED:
             return range(1, self.paginator.num_pages+1)
         result = []
-        upper_bound = int(ceil(self.number / float(PAGE_RANGE_DISPLAYED))) * 10
-        lower_bound = upper_bound - 10 + 1
-
+        upper_multiplier = int(ceil(self.number / float(PAGE_RANGE_DISPLAYED)))
+        lower_multiplier = upper_multiplier - 1
+        upper_bound = upper_multiplier * PAGE_RANGE_DISPLAYED
+        lower_bound = lower_multiplier * PAGE_RANGE_DISPLAYED + 1
+        
         if upper_bound > self.paginator.num_pages:
             upper_bound = self.paginator.num_pages
 
