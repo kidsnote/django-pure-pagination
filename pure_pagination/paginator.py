@@ -4,7 +4,7 @@ from django.conf import settings
 from math import ceil, floor
 import functools
 
-from django.core.paginator import PageNotAnInteger, EmptyPage
+from django.core.paginator import InvalidPage, PageNotAnInteger, EmptyPage
 from django.template.loader import render_to_string
 
 PAGINATION_SETTINGS = getattr(settings, "PAGINATION_SETTINGS", {})
